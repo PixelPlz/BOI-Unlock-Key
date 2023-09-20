@@ -1,0 +1,4 @@
+<items gfxroot="gfx/items/" version="1" deathanm2="gfx/death_items.anm2">
+	<passive id="1" name="Unlock Key" description="With progress comes strife" gfx="Collectibles_UnlockKey.png"
+	quality="0" craftquality="4" hidden="true" tags="quest nogreed offensive nocantrip nochallenge lazarussharedglobal noeden" />
+</items>

@@ -1,0 +1,4 @@
+<entities anm2root="gfx/" version="5" deathanm2="gfx/death_enemies.anm2">
+	<entity name="Mr. Unlocki"   id="6" variant="5111"   anm2path="mole.anm2"
+	friction="1" collisionRadius="20" collisionMass="100" numGridCollisionPoints="24" />
+</entities>
