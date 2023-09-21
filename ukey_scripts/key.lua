@@ -119,6 +119,10 @@ function mod:NewRoom()
 			end
 		end
 	end
+
+	-- Reset key tracker
+	mod.KeyRoomIndex = nil
+	mod.KeyGridIndex = nil
 end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.NewRoom)
 

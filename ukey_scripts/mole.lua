@@ -112,12 +112,12 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.CustomSlotCallbacks)
 
 
 
--- Try to spawn the Beggar
+-- Try to spawn Mr. Unlocki
 function mod:TrySpawnMole()
     local level = Game():GetLevel()
     local room = Game():GetRoom()
 
-    if room:IsFirstVisit() -- Only check when first entering
+    if room:IsFirstVisit() and Game():IsGreedMode() == false -- Only check when first entering and not in Greed Mode
     and level:GetAbsoluteStage() == LevelStage.STAGE1_1 -- Currently on the first floor
     and room:GetType() == RoomType.ROOM_SHOP -- In the shop
     and Game().TimeCounter <= mod.TimeLimit then -- Under the time limit

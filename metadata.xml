@@ -4,8 +4,8 @@
     <directory>unlock key</directory>
     <id>3038666105</id>
     <description></description>
-    <version>1.1</version>
-    <visibility>Private</visibility>
+    <version>1.2</version>
+    <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
     <tag id="Rooms"/>
