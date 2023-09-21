@@ -161,6 +161,11 @@ function mod:EnemyInit(entity)
 		local onePercent = entity.MaxHitPoints / 100
 		local increase = onePercent * mod.EnemyHPIncrease
 
+		-- Prevent Gideon from softlocking
+		if entity.Type == EntityType.ENTITY_GIDEON then
+			increase = math.floor(increase)
+		end
+
 		entity.MaxHitPoints = entity.MaxHitPoints + increase
 		entity.HitPoints = entity.MaxHitPoints
 	end
