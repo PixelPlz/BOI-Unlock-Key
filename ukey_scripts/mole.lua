@@ -8,6 +8,17 @@ local States = {
 
 
 
+-- Get the time limit for the current floor
+function mod:GetMoleTimeLimit()
+    if (Game():GetLevel():GetCurses() & LevelCurse.CURSE_OF_LABYRINTH > 0) then
+        return mod.TimeLimitXL
+    else
+        return mod.TimeLimit
+    end
+end
+
+
+
 function mod:MoleInit(slot)
     slot:GetData().State = States.Idle
     slot.TargetPosition = slot.Position
@@ -24,7 +35,7 @@ function mod:MoleUpdate(slot)
 
 
     if slot.GridCollisionClass == EntityGridCollisionClass.GRIDCOLL_GROUND -- Bombed
-    or Game().TimeCounter > mod.TimeLimit then -- Time limit is passed
+    or Game().TimeCounter > mod:GetMoleTimeLimit() then -- Time limit is passed
         data.State = States.Teleport
 		sprite:Play("Leave")
 
@@ -120,7 +131,7 @@ function mod:TrySpawnMole()
     if room:IsFirstVisit() and Game():IsGreedMode() == false -- Only check when first entering and not in Greed Mode
     and level:GetAbsoluteStage() == LevelStage.STAGE1_1 -- Currently on the first floor
     and room:GetType() == RoomType.ROOM_SHOP -- In the shop
-    and Game().TimeCounter <= mod.TimeLimit then -- Under the time limit
+    and Game().TimeCounter <= mod:GetMoleTimeLimit() then -- Under the time limit
         local pos = room:FindFreePickupSpawnPosition(room:GetGridPosition(26), 0, true, false)
         Isaac.Spawn(EntityType.ENTITY_SLOT, mod.MoleVariant, 0, pos, Vector.Zero, nil)
     end
