@@ -25,7 +25,6 @@ function mod:IsMommyRoom(type, room)
 			return true
 		end
 	end
-
 	return false
 end
 
@@ -71,9 +70,15 @@ function mod:TrySpawnUnlockKeyExits()
 
 				if door ~= nil and door.TargetRoomIndex == GridRooms.ROOM_BLUE_WOOM_IDX then
 					local sprite = door:GetSprite()
+					local floorSuffix = "corpse"
+
+					-- Last Judgement compatibility (probably gonna have to do a Fall from Grace one too...)
+					if LastJudgement and LastJudgement.STAGE.Mortis:IsStage() then
+						floorSuffix = "mortis"
+					end
 
 					for i = 0, sprite:GetLayerCount() - 1 do
-						sprite:ReplaceSpritesheet(i, "gfx/grid/door_29_doortobluewomb_corpse.png")
+						sprite:ReplaceSpritesheet(i, "gfx/grid/door_29_doortobluewomb_" .. floorSuffix .. ".png")
 					end
 					sprite:LoadGraphics()
 
@@ -102,27 +107,38 @@ function mod:NewRoom()
 	end
 
 
-	-- Fucking piece of shit game replaces the Blue Womb trapdoor with a cobweb in the Corpse (FUN!!!) so now I have to undo it
-	if level:GetCurrentRoomIndex() == GridRooms.ROOM_BLUE_WOOM_IDX and room:IsFirstVisit()
-	and level:GetAbsoluteStage() == LevelStage.STAGE4_2
-	and (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
-		for grindex = 0, room:GetGridSize() - 1 do
-			local grid = room:GetGridEntity(grindex)
+	-- Blue Womb entrance stuff
+	if level:GetCurrentRoomIndex() == GridRooms.ROOM_BLUE_WOOM_IDX then
+		local inCorpse = (level:GetAbsoluteStage() == LevelStage.STAGE4_1 or level:GetAbsoluteStage() == LevelStage.STAGE4_2) and level:GetStageType() >= StageType.STAGETYPE_REPENTANCE
+		local inCustomCorpse = LastJudgement and LastJudgement.STAGE.Mortis:IsStage()
 
-			if grid ~= nil and grid:GetType() == GridEntityType.GRID_SPIDERWEB then
-				room:RemoveGridEntity(grindex, 0, false)
-				room:Update()
+		if inCorpse or inCustomCorpse then
+			for grindex = 0, room:GetGridSize() - 1 do
+				local grid = room:GetGridEntity(grindex)
 
-				local trapdoorPos = room:GetGridPosition(grindex)
-				Isaac.GridSpawn(GridEntityType.GRID_TRAPDOOR, 0, trapdoorPos, true)
-				break
+				if grid then
+					-- Make the door lead to the Mother arena instead of the entrance to it
+					if grid:ToDoor() then
+						grid:ToDoor().TargetRoomIndex = GridRooms.ROOM_SECRET_EXIT_IDX
+
+					-- The game replaces the Blue Womb trapdoor with a cobweb in Corpse (FUN!!!) so I have to undo it
+					elseif inCorpse and grid:GetType() == GridEntityType.GRID_SPIDERWEB then
+						room:RemoveGridEntity(grindex, 0, false)
+						room:Update()
+
+						local trapdoorPos = room:GetGridPosition(grindex)
+						Isaac.GridSpawn(GridEntityType.GRID_TRAPDOOR, 0, trapdoorPos, true)
+					end
+				end
 			end
 		end
 	end
 
+
 	-- Reset key tracker
-	mod.KeyRoomIndex = nil
-	mod.KeyGridIndex = nil
+	if mod.KeyGridIndex then
+		mod.KeyGridIndex = nil
+	end
 end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.NewRoom)
 
@@ -176,17 +192,15 @@ mod:AddPriorityCallback(ModCallbacks.MC_POST_NPC_INIT, CallbackPriority.LATE, mo
 
 -- Prevent the key from being rerolled (hopefully you can't somehow force it to spawn in other places with this)
 function mod:KeyPedestalUpdate(pickup)
-	if Game():GetLevel():GetAbsoluteStage() == LevelStage.STAGE1_1 and mod:DoesAnyoneHaveUnlockKey() == false and pickup.SubType > 0 then
+	if not mod:DoesAnyoneHaveUnlockKey() and pickup.SubType > 0 then
 		local room = Game():GetRoom()
-		local roomIndex = Game():GetLevel():GetCurrentRoomIndex()
 
 		-- Get the key pedestal's position
 		if pickup.SubType == mod.Item then
-			mod.KeyRoomIndex = roomIndex
 			mod.KeyGridIndex = room:GetGridIndex(pickup.Position)
 
 		-- Turn the item back into the key
-		elseif mod.KeyRoomIndex ~= nil and roomIndex == mod.KeyRoomIndex and room:GetGridIndex(pickup.Position) == mod.KeyGridIndex then
+		elseif room:GetGridIndex(pickup.Position) == mod.KeyGridIndex then
 			pickup:Morph(pickup.Type, pickup.Variant, mod.Item, true, true, true) -- This removes the item it was gonna roll into from its pool... too bad!
 		end
 	end

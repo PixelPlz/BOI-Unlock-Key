@@ -11,9 +11,6 @@ mod.EnemyHPIncrease = 20 -- In percent
 mod.TimeLimit   = 1.5 * 60 * 30
 mod.TimeLimitXL = 2.5 * 60 * 30
 
-mod.KeyRoomIndex = nil
-mod.KeyGridIndex = nil
-
 
 
 --[[ Load scripts ]]--
